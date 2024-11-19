@@ -1,6 +1,5 @@
 #include <gmp.h>
 #include <limits.h>
-#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,37 +22,59 @@ void printArray(struct vector vector) {
 // the array {0} if the number is not factorizable with the factor base.
 struct vector baseFactorize(mpz_t N, struct vector factorBase) {
   int *factors = (int *)calloc(factorBase.size, sizeof(int));
-  mpz_t temp, q, r;
-  mpz_init(temp);
+  mpz_t n, q, r;
+  mpz_inits(n);
   mpz_init(q);
   mpz_init(r);
-  mpz_set(temp, N);
+  mpz_set(n, N);
   for (int i = 0; i < factorBase.size; i++) {
-    mpz_fdiv_qr_ui(q, r, temp,
-                   factorBase.array[i]); // Perform division of prime.
-    while (mpz_get_si(r) == 0) {     // If remainder = 0, then it's divisible.
+    mpz_fdiv_qr_ui(q, r, n, factorBase.array[i]); // Perform division of prime.
+    while (mpz_cmp_ui(r, 0) == 0) {  // If remainder = 0, then it's divisible.
       factors[i] = (factors[i] + 1); // Add one prime.
-      mpz_divexact_ui(temp, temp, factorBase.array[i]); // Perform division.
-      mpz_fdiv_qr_ui(q, r, temp, factorBase.array[i]);
+      mpz_divexact_ui(n, n, factorBase.array[i]); // Perform division.
+      mpz_fdiv_qr_ui(q, r, n, factorBase.array[i]);
     }
-    if (mpz_get_si(temp) == 1)
+    if (mpz_get_si(n) == 1)
       break;
   }
   mpz_clear(q);
   mpz_clear(r);
-  if (mpz_get_si(temp) != 1) {
-    printf("%ld", mpz_get_si(temp));
-    mpz_clear(temp);
+  if (mpz_get_si(n) != 1) {
+    printf("%ld", mpz_get_si(n));
+    mpz_clear(n);
     return (struct vector){(int *)calloc(1, sizeof(int)), 1};
   }
-  mpz_clear(temp);
+  mpz_clear(n);
   return (struct vector){factors, factorBase.size};
 }
 
-/*
-// Returns a vector containing [GCD(A,B), X, Y] such that GCD(A,B) = XA + YB.
-struct vector gcd(mpz_t A, mpz_t B) { return 0; }
-*/
+// Returns GCD(A,B).
+void gcd(mpz_t res, mpz_t A, mpz_t B) {
+  int cmp = mpz_cmp(A, B);
+  if (cmp == 0) {
+    mpz_set(res, A);
+    return;
+  }
+  mpz_t a, b, r;
+  if (cmp < 0) {
+    mpz_init_set(b, A);
+    mpz_init_set(a, B);
+  } else {
+    mpz_init_set(a, A);
+    mpz_init_set(b, B);
+  }
+  mpz_init(r);
+  mpz_mod(r, a, b);
+  while (mpz_cmp_ui(r, 0) != 0) {
+    mpz_set(a, b);
+    mpz_set(b, r);
+    mpz_mod(r, a, b);
+  }
+  mpz_set(res, b);
+  mpz_clear(a);
+  mpz_clear(b);
+  mpz_clear(r);
+}
 
 struct vector factorBase(int baseSize) {
   int *primeList = (int *)calloc(baseSize, sizeof(int));
@@ -95,6 +116,14 @@ int main(int argc, char *argv[]) {
   mpz_t N;
   mpz_init_set_str(N, argv[1], 10);
 
+  /*
+  mpz_t A,B,res;
+  mpz_init_set_str(A, argv[3], 10);
+  mpz_init_set_str(B, argv[4], 10);
+  mpz_init(res);
+  gcd(res, A, B);
+  printf("GCD(%s,%s) = %ld", argv[3], argv[4], mpz_get_si(res));
+*/
   struct vector F = factorBase(boundness);
 
   // printArray(F);
