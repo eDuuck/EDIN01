@@ -5,10 +5,18 @@
 #include <stdlib.h>
 
 #define DEFAULT_SMOOTHNESS 100
+#define K_RANGE 50
+#define J_RANGE 50
+#define L_SIZE 20
 
 struct vector {
   int *array;
   int size;
+};
+
+struct guess {
+  mpz_t *r;
+  struct vector factors;
 };
 
 void printArray(struct vector vector) {
@@ -98,8 +106,7 @@ struct vector factorBase(int baseSize) {
       primeList,
       nbrOfPrimes *
           sizeof(int)); // Resize the primeList to be the correct size.
-  struct vector F = {primeList, nbrOfPrimes};
-  return F;
+  return (struct vector){primeList, nbrOfPrimes};
 }
 
 int main(int argc, char *argv[]) {
@@ -116,6 +123,43 @@ int main(int argc, char *argv[]) {
   mpz_t N;
   mpz_init_set_str(N, argv[1], 10);
 
+  struct guess *guesses[L_SIZE];
+  int L_found = 0;
+
+  struct vector F = factorBase(boundness);
+
+  mpz_t sqr_kn, r, Y;
+  mpz_init(sqr_kn);
+  mpz_init(r);
+  mpz_init(Y);
+  for (int k = 1; k <= K_RANGE; k++) {
+    mpz_set(sqr_kn, N);
+    mpz_mul_si(sqr_kn, sqr_kn, k);
+    mpz_sqrt(sqr_kn, sqr_kn);
+
+    for (int j = 1; j <= J_RANGE; j++) {
+      printf("Testing k=%d and j=%d", k, j);
+      mpz_set(r, sqr_kn);
+      mpz_add_ui(r, r, j);
+      mpz_powm_ui(Y, r, 2, N);
+      struct guess guess;
+      guess.factors = baseFactorize(Y, F);
+      if (guess.factors.size == 1) {
+        free(guess.factors.array);
+      } else {
+        mpz_t guessNumber;
+        mpz_init_set(guessNumber, Y);
+        guess.r = &guessNumber;
+        guesses[L_found] = &guess;
+        printf("Success! Found %d candidates.", L_found + 1);
+        if (L_found++ >= L_SIZE)
+          break;
+      }
+    }
+    if (L_found >= L_SIZE)
+      break;
+  }
+  printf("Done.");
   /*
   mpz_t A,B,res;
   mpz_init_set_str(A, argv[3], 10);
@@ -124,7 +168,6 @@ int main(int argc, char *argv[]) {
   gcd(res, A, B);
   printf("GCD(%s,%s) = %ld", argv[3], argv[4], mpz_get_si(res));
 */
-  struct vector F = factorBase(boundness);
 
   // printArray(F);
   struct vector base = baseFactorize(N, F);
