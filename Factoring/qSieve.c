@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DEFAULT_SMOOTHNESS 100
+#include "gaussElim.h"
+
+#define DEFAULT_SMOOTHNESS 10
 #define K_RANGE 50
 #define J_RANGE 50
 #define L_SIZE 20
@@ -28,26 +30,28 @@ void printArray(struct vector vector) {
 
 // Calculates the factorization of N with a given factor base. Returns
 // the array {0} if the number is not factorizable with the factor base.
-struct vector baseFactorize(mpz_t N, struct vector factorBase) {
+struct vector mod2bFact(mpz_t N, struct vector factorBase) {
   int *factors = (int *)calloc(factorBase.size, sizeof(int));
+  if (mpz_cmp_ui(N, 1) == 0)
+    return (struct vector){(int *)calloc(1, sizeof(int)), 1};
   mpz_t n, q, r;
-  mpz_inits(n);
+  mpz_init(n);
   mpz_init(q);
   mpz_init(r);
   mpz_set(n, N);
   for (int i = 0; i < factorBase.size; i++) {
     mpz_fdiv_qr_ui(q, r, n, factorBase.array[i]); // Perform division of prime.
     while (mpz_cmp_ui(r, 0) == 0) {  // If remainder = 0, then it's divisible.
-      factors[i] = (factors[i] + 1); // Add one prime.
+      factors[i] = (factors[i] + 1) % 2; // Add one prime.
       mpz_divexact_ui(n, n, factorBase.array[i]); // Perform division.
       mpz_fdiv_qr_ui(q, r, n, factorBase.array[i]);
     }
-    if (mpz_get_si(n) == 1)
+    if (mpz_cmp_ui(n, 1) == 0)
       break;
   }
   mpz_clear(q);
   mpz_clear(r);
-  if (mpz_get_si(n) != 1) {
+  if (mpz_cmp_ui(n, 1) != 0) {
     printf("%ld", mpz_get_si(n));
     mpz_clear(n);
     return (struct vector){(int *)calloc(1, sizeof(int)), 1};
@@ -125,8 +129,10 @@ int main(int argc, char *argv[]) {
 
   struct guess *guesses[L_SIZE];
   int L_found = 0;
-
   struct vector F = factorBase(boundness);
+
+  int* factorsFound = (int*)calloc(F.size,sizeof(int));
+  
 
   mpz_t sqr_kn, r, Y;
   mpz_init(sqr_kn);
@@ -138,28 +144,31 @@ int main(int argc, char *argv[]) {
     mpz_sqrt(sqr_kn, sqr_kn);
 
     for (int j = 1; j <= J_RANGE; j++) {
-      printf("Testing k=%d and j=%d", k, j);
+      printf("Testing k=%d and j=%d\n", k, j);
       mpz_set(r, sqr_kn);
       mpz_add_ui(r, r, j);
       mpz_powm_ui(Y, r, 2, N);
-      struct guess guess;
-      guess.factors = baseFactorize(Y, F);
-      if (guess.factors.size == 1) {
-        free(guess.factors.array);
-      } else {
+      struct vector factors = mod2bFact(Y, F);
+      if (factors.size != 1) {
         mpz_t guessNumber;
         mpz_init_set(guessNumber, Y);
-        guess.r = &guessNumber;
-        guesses[L_found] = &guess;
-        printf("Success! Found %d candidates.", L_found + 1);
-        if (L_found++ >= L_SIZE)
+        guesses[L_found] = malloc(sizeof(struct guess));
+        guesses[L_found]->r = &guessNumber;
+        guesses[L_found]->factors = factors;
+        printf("Success! Found %d candidates.\n", L_found + 1);
+        printArray(factors);
+        printf("\n");
+        L_found++;
+        if (L_found == L_SIZE)
           break;
       }
     }
-    if (L_found >= L_SIZE)
+    if (L_found == L_SIZE)
       break;
   }
-  printf("Done.");
+  printf("Done.\n");
+
+  for(int i = 0; i < L_SIZE; i++)printArray(guesses[i]->factors);
   /*
   mpz_t A,B,res;
   mpz_init_set_str(A, argv[3], 10);
@@ -167,15 +176,6 @@ int main(int argc, char *argv[]) {
   mpz_init(res);
   gcd(res, A, B);
   printf("GCD(%s,%s) = %ld", argv[3], argv[4], mpz_get_si(res));
-*/
-
-  // printArray(F);
-  struct vector base = baseFactorize(N, F);
-  if (base.size != 1) {
-    printf("Factorized the number.");
-  } else {
-    printf("Gee dang, didn't factorize.");
-  }
-  //  Comment silco believes in u, dont make him dissapointed
+*/ //  Comment silco believes in u, dont make him dissapointed
   return 0;
 }
