@@ -41,8 +41,8 @@ struct vector mod2bFact(mpz_t N, struct vector factorBase) {
   mpz_set(n, N);
   for (int i = 0; i < factorBase.size; i++) {
     mpz_fdiv_qr_ui(q, r, n, factorBase.array[i]); // Perform division of prime.
-    while (mpz_cmp_ui(r, 0) == 0) {  // If remainder = 0, then it's divisible.
-      factors[i] = (factors[i] + 1) % 2; // Add one prime.
+    while (mpz_cmp_ui(r, 0) == 0) { // If remainder = 0, then it's divisible.
+      factors[i] = (factors[i] + 1) % 2;          // Add one prime.
       mpz_divexact_ui(n, n, factorBase.array[i]); // Perform division.
       mpz_fdiv_qr_ui(q, r, n, factorBase.array[i]);
     }
@@ -131,8 +131,7 @@ int main(int argc, char *argv[]) {
   int L_found = 0;
   struct vector F = factorBase(boundness);
 
-  int* factorsFound = (int*)calloc(F.size,sizeof(int));
-  
+  int *factorsFound = (int *)calloc(F.size, sizeof(int));
 
   mpz_t sqr_kn, r, Y;
   mpz_init(sqr_kn);
@@ -168,7 +167,10 @@ int main(int argc, char *argv[]) {
   }
   printf("Done.\n");
 
-  for(int i = 0; i < L_SIZE; i++)printArray(guesses[i]->factors);
+  for (int i = 0; i < L_SIZE; i++)
+    printArray(guesses[i]->factors);
+
+  system("./gaussBin mat sol");
   /*
   mpz_t A,B,res;
   mpz_init_set_str(A, argv[3], 10);
