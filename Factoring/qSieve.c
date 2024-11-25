@@ -7,7 +7,9 @@
 #define DEFAULT_SMOOTHNESS 10
 #define K_DEF 1000
 #define J_DEF 1000
-#define L_DEF 100
+#define L_DEF 10
+
+// quadSieve nbrToFactor |factorBase| K_range J_range L_limit.
 
 struct vector {
   int *array;
@@ -16,6 +18,7 @@ struct vector {
 
 struct guess {
   mpz_t *r;
+  mpz_t *rSquared;
   struct vector factors;
 };
 
@@ -52,6 +55,7 @@ struct vector mod2bFact(mpz_t N, struct vector factorBase) {
   if (mpz_cmp_ui(n, 1) != 0) {
     // printf("%ld", mpz_get_si(n));
     mpz_clear(n);
+    free(factors);
     return (struct vector){(int *)calloc(1, sizeof(int)), 1};
   }
   mpz_clear(n);
@@ -126,11 +130,11 @@ int main(int argc, char *argv[]) {
     boundness = atoi(argv[2]);
   }
   if (argc > 3)
-    l_size = atoi(argv[3]);
+    k_range = atoi(argv[3]);
   if (argc > 4)
     j_range = atoi(argv[4]);
   if (argc > 5)
-    k_range = atoi(argv[5]);
+    l_size = atoi(argv[5]);
   mpz_t N;
   mpz_init_set_str(N, argv[1], 10);
 
@@ -158,25 +162,26 @@ int main(int argc, char *argv[]) {
       if (factors.size != 1) {
         guesses[L_found] = malloc(sizeof(struct guess));
         guesses[L_found]->r = malloc(sizeof(mpz_t));
-        mpz_init(*guesses[L_found]->r);
-        mpz_set(*guesses[L_found]->r, r);
+        guesses[L_found]->rSquared = malloc(sizeof(mpz_t));
+        mpz_init_set(*guesses[L_found]->r, r);
+        mpz_init_set(*guesses[L_found]->rSquared, Y);
         guesses[L_found]->factors = factors;
-        printf("Success! Found %d candidates.\n", L_found + 1);
-        // printArray(factors);
-        // printf("\n");
+        // printf("Success! Found %d candidates.\n", L_found + 1);
         L_found++;
         if (L_found == l_size)
           break;
+      } else {
+        free(factors.array);
       }
     }
     if (L_found == l_size)
       break;
   }
   printf("Done searching.\n");
-  /*
-  for (i = 0; i < L_found; i++)
-    printArray(guesses[i]->factors);
-  */
+  mpz_clear(sqr_kn);
+  mpz_clear(r);
+  mpz_clear(Y);
+
   FILE *binInput = fopen("binInput", "wb");
 
   fprintf(binInput, "%d %d \n", L_found, F.size);
@@ -188,49 +193,64 @@ int main(int argc, char *argv[]) {
   }
   fclose(binInput);
   system("./GaussBin binInput binOutput");
+  // system("rm binInput");
 
   FILE *binOutput = fopen("binOutput", "rb");
   int binSolutions;
   fscanf(binOutput, "%d", &binSolutions);
-  if (!(binSolutions > 0)) {
-    printf("No solutions found, try different parameters.");
-    exit(EXIT_FAILURE);
-  }
-  mpz_t X;
-  mpz_init(X);
-  // mpz_init(Y);
-  for (i = 0; i < binSolutions; i++) {
-    mpz_set_si(X, 1);
-    mpz_set_si(Y, 1);
-    for (j = 0; j < L_found; j++) {
-      fscanf(binOutput, "%d", &k);
-      if (k) {
-        mpz_mul(X, X, *guesses[j]->r);
-        mpz_mod(X, X, N);
-        for (int l = 0; l < F.size; l++) {
-          int p = F.array[l] * guesses[j]->factors.array[l];
-          if (p != 0) {
-            mpz_mul_si(Y, Y, p);
+
+  if (binSolutions > 0) {
+    mpz_t diff, X, rSquared;
+    int l;
+    mpz_init(X);
+    mpz_init(Y);
+    mpz_init(diff);
+    for (i = 0; i < binSolutions; i++) {
+      mpz_set_si(X, 1);
+      mpz_set_si(Y, 1);
+      for (j = 0; j < L_found; j++) {
+        fscanf(binOutput, "%d", &k);
+        if (k) {
+          mpz_mul(X, X, *guesses[j]->r);
+          mpz_mul(Y, Y, *guesses[j]->rSquared);
+          /*
+          for (l = 0; l < F.size; l++) {
+            int p = F.array[l] * guesses[j]->factors.array[l];
+            if (p != 0) {
+              mpz_mul_si(Y, Y, p);
+            }
           }
+          */
         }
-        // mpz_sqrt(Y, Y);
-        // mpz_mod(Y, Y, N);
+      }
+      mpz_sqrt(Y, Y);
+      mpz_mod(Y, Y, N);
+      mpz_mod(X, X, N);
+      j = mpz_cmp(X, Y);
+      if (j != 0) {
+        mpz_sub(diff, Y, X);
+        mpz_mod(diff, diff, N);
+        gcd(diff, diff, N);
+        if (mpz_cmp_ui(diff, 1) != 0) {
+          printf("Try X = %ld and Y = %ld. GCD = %ld \n", mpz_get_si(X),
+                 mpz_get_si(Y), mpz_get_si(diff));
+        }
       }
     }
-    mpz_sqrt(Y, Y);
-    mpz_mod(Y, Y, N);
-    j = mpz_cmp(X, Y);
-    if (j != 0) {
-      mpz_sub(r, X, Y);
-      mpz_mod(r, r, N);
-      gcd(r, r, N);
-      if (mpz_cmp_ui(r, 1) != 0) {
-        printf("Try X = %ld and Y = %ld. GCD = %ld \n", mpz_get_si(X),
-               mpz_get_si(Y), mpz_get_si(r));
-      }
-    }
-    //}
+    mpz_clear(X);
+    mpz_clear(Y);
+    mpz_clear(diff);
+  } else {
+    printf("No solutions found, try different parameters.");
   }
+  // system("rm binOutput");
+
+  for (i = 0; i < L_found; i++) {
+    mpz_clear(*guesses[i]->r);
+    mpz_clear(*guesses[i]->rSquared);
+    free(guesses[i]->factors.array);
+  }
+
   /*
   mpz_t A,B,res;
   mpz_init_set_str(A, argv[3], 10);
