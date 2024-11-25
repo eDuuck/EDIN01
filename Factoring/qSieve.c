@@ -5,9 +5,9 @@
 #include <stdlib.h>
 
 #define DEFAULT_SMOOTHNESS 10
-#define K_RANGE 1000
-#define J_RANGE 1000
-#define L_SIZE 100
+#define K_DEF 1000
+#define J_DEF 1000
+#define L_DEF 100
 
 struct vector {
   int *array;
@@ -116,16 +116,25 @@ int main(int argc, char *argv[]) {
     printf("Please input a number to factor.\n");
     return 0;
   }
+  int l_size = L_DEF;
+  int k_range = K_DEF;
+  int j_range = J_DEF;
   int boundness = DEFAULT_SMOOTHNESS;
   if (argc < 3) {
     printf("No smoothness specified. Set to %d.\n", DEFAULT_SMOOTHNESS);
   } else {
     boundness = atoi(argv[2]);
   }
+  if (argc > 3)
+    l_size = atoi(argv[3]);
+  if (argc > 4)
+    j_range = atoi(argv[4]);
+  if (argc > 5)
+    k_range = atoi(argv[5]);
   mpz_t N;
   mpz_init_set_str(N, argv[1], 10);
 
-  struct guess *guesses[L_SIZE];
+  struct guess *guesses[l_size];
   int i, j, k, L_found;
   L_found = 0;
 
@@ -135,12 +144,12 @@ int main(int argc, char *argv[]) {
   mpz_init(sqr_kn);
   mpz_init(r);
   mpz_init(Y);
-  for (k = 1; k <= K_RANGE; k++) {
+  for (k = 1; k <= k_range; k++) {
     mpz_set(sqr_kn, N);
     mpz_mul_si(sqr_kn, sqr_kn, k);
     mpz_sqrt(sqr_kn, sqr_kn);
 
-    for (j = 1; j <= J_RANGE; j++) {
+    for (j = 1; j <= j_range; j++) {
       // printf("Testing k=%d and j=%d\n", k, j);
       mpz_set(r, sqr_kn);
       mpz_add_ui(r, r, j);
@@ -156,11 +165,11 @@ int main(int argc, char *argv[]) {
         // printArray(factors);
         // printf("\n");
         L_found++;
-        if (L_found == L_SIZE)
+        if (L_found == l_size)
           break;
       }
     }
-    if (L_found == L_SIZE)
+    if (L_found == l_size)
       break;
   }
   printf("Done searching.\n");
@@ -212,11 +221,8 @@ int main(int argc, char *argv[]) {
     mpz_mod(Y, Y, N);
     j = mpz_cmp(X, Y);
     if (j != 0) {
-      if (j < 0) {
-        mpz_sub(r, Y, X);
-      } else {
-        mpz_sub(r, X, Y);
-      }
+      mpz_sub(r, X, Y);
+      mpz_mod(r, r, N);
       gcd(r, r, N);
       if (mpz_cmp_ui(r, 1) != 0) {
         printf("Try X = %ld and Y = %ld. GCD = %ld \n", mpz_get_si(X),
