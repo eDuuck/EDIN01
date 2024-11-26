@@ -1,7 +1,7 @@
 all: qSieve GaussBin
 
 qSieve: qSieve.c
-	gcc -o quadSieve qSieve.c -lgmp -g
+	gcc qSieve.c -o quadSieve -lgmp 
 
 GaussBin: GaussBin.c
 	gcc GaussBin.c -o GaussBin
@@ -9,5 +9,3 @@ GaussBin: GaussBin.c
 clean:
 	rm quadSieve
 	rm GaussBin
-	rm binInput
-	rm binOutput

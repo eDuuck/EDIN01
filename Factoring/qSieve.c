@@ -3,11 +3,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <wchar.h>
 
 #define DEFAULT_SMOOTHNESS 10
-#define K_DEF 1000
-#define J_DEF 1000
+#define J_DEF 10
 #define L_DEF 10
+#define K_DEF INT_MAX
 
 // quadSieve nbrToFactor |factorBase| K_range J_range L_limit.
 
@@ -17,8 +19,7 @@ struct vector {
 };
 
 struct guess {
-  mpz_t *r;
-  mpz_t *rSquared;
+  mpz_t *r, *rSquared, *facSum;
   struct vector factors;
 };
 
@@ -29,37 +30,37 @@ void printArray(struct vector vector) {
   printf("\n");
 }
 
-// Calculates the factorization of N with a given factor base. Returns
+// Calculates the factorization of N with a given factor base in mod 2. Returns
 // the array {0} if the number is not factorizable with the factor base.
 struct vector mod2bFact(mpz_t N, struct vector factorBase) {
   int *factors = (int *)calloc(factorBase.size, sizeof(int));
   if (mpz_cmp_ui(N, 1) == 0)
     return (struct vector){(int *)calloc(1, sizeof(int)), 1};
-  mpz_t n, q, r;
-  mpz_init(n);
-  mpz_init(q);
-  mpz_init(r);
-  mpz_set(n, N);
+  mpz_t n, modResult;
+  mpz_init_set(n, N);
+  mpz_init(modResult);
   for (int i = 0; i < factorBase.size; i++) {
-    mpz_fdiv_qr_ui(q, r, n, factorBase.array[i]); // Perform division of prime.
-    while (mpz_cmp_ui(r, 0) == 0) {  // If remainder = 0, then it's divisible.
-      factors[i] = (factors[i] + 1); // Add one prime.
+    mpz_mod_ui(modResult, n, factorBase.array[i]); // Perform modof prime.
+    while (mpz_cmp_ui(modResult, 0) ==
+           0) { // If remainder = 0, then it's divisible.
+      factors[i] = (factors[i] + 1) % 2;          // Add one prime.
       mpz_divexact_ui(n, n, factorBase.array[i]); // Perform division.
-      mpz_fdiv_qr_ui(q, r, n, factorBase.array[i]);
+      mpz_mod_ui(modResult, n, factorBase.array[i]);
     }
     if (mpz_cmp_ui(n, 1) == 0)
       break;
   }
-  mpz_clear(q);
-  mpz_clear(r);
+  mpz_clear(modResult);
   if (mpz_cmp_ui(n, 1) != 0) {
-    // printf("%ld", mpz_get_si(n));
     mpz_clear(n);
     free(factors);
     return (struct vector){(int *)calloc(1, sizeof(int)), 1};
   }
   mpz_clear(n);
-  return (struct vector){factors, factorBase.size};
+  struct vector returnVal;
+  returnVal.array = factors;
+  returnVal.size = factorBase.size;
+  return returnVal;
 }
 
 // Returns GCD(A,B).
@@ -105,7 +106,6 @@ struct vector factorBase(int baseSize) {
     if (isPrime) {
       primeList[nbrOfPrimes] = i;
       nbrOfPrimes++;
-      // printf("%d is a prime\n", i);
     }
   }
   primeList = (int *)realloc(
@@ -116,6 +116,7 @@ struct vector factorBase(int baseSize) {
 }
 
 int main(int argc, char *argv[]) {
+  clock_t startTime = clock();
   if (argc < 2) {
     printf("Please input a number to factor.\n");
     return 0;
@@ -130,19 +131,20 @@ int main(int argc, char *argv[]) {
     boundness = atoi(argv[2]);
   }
   if (argc > 3)
-    k_range = atoi(argv[3]);
+    j_range = atoi(argv[3]);
   if (argc > 4)
-    j_range = atoi(argv[4]);
-  if (argc > 5)
-    l_size = atoi(argv[5]);
+    l_size = atoi(argv[4]);
   mpz_t N;
   mpz_init_set_str(N, argv[1], 10);
 
   struct guess *guesses[l_size];
-  int i, j, k, L_found;
+  int i, j, k, l, L_found, diffFactors;
+  bool notEqual = true; // For the first guess, this is always true as there's
+                        // no previous guesses.
   L_found = 0;
-
+  printf("Calculating %d primes...  ", boundness);
   struct vector F = factorBase(boundness);
+  printf("Done!\nProceeding to find candidates.\n");
 
   mpz_t sqr_kn, r, Y;
   mpz_init(sqr_kn);
@@ -160,16 +162,36 @@ int main(int argc, char *argv[]) {
       mpz_powm_ui(Y, r, 2, N);
       struct vector factors = mod2bFact(Y, F);
       if (factors.size != 1) {
-        guesses[L_found] = malloc(sizeof(struct guess));
-        guesses[L_found]->r = malloc(sizeof(mpz_t));
-        guesses[L_found]->rSquared = malloc(sizeof(mpz_t));
-        mpz_init_set(*guesses[L_found]->r, r);
-        mpz_init_set(*guesses[L_found]->rSquared, Y);
-        guesses[L_found]->factors = factors;
-        // printf("Success! Found %d candidates.\n", L_found + 1);
-        L_found++;
-        if (L_found == l_size)
-          break;
+        for (i = 0; i < L_found;
+             i++) { // Check if a previous found guess has the same factors.
+          notEqual = false;
+          for (l = 0; l < F.size;
+               l++) { // Compare every factor, use XOR to spot if difference. If
+                      // it iterates through the entire loop without finding
+                      // difference. Then notEqual remains false.
+            if (factors.array[l] ^ guesses[i]->factors.array[l]) {
+              notEqual = true;
+              break;
+            }
+          }
+          if (!notEqual)
+            break;
+        }
+        if (notEqual) {
+          guesses[L_found] = (struct guess *)malloc(sizeof(struct guess));
+          guesses[L_found]->r = malloc(sizeof(mpz_t));
+          guesses[L_found]->rSquared = malloc(sizeof(mpz_t));
+          mpz_init_set(*guesses[L_found]->r, r);
+          mpz_init_set(*guesses[L_found]->rSquared, Y);
+          guesses[L_found]->factors = factors;
+          // printf("Success! Found %d candidates.\n", L_found + 1);
+          L_found++;
+          if (L_found == l_size)
+            break;
+        } else {
+          free(factors.array);
+        }
+
       } else {
         free(factors.array);
       }
@@ -177,10 +199,12 @@ int main(int argc, char *argv[]) {
     if (L_found == l_size)
       break;
   }
-  printf("Done searching.\n");
+  printf("Done searching. Found %d candidates.\n", L_found);
   mpz_clear(sqr_kn);
   mpz_clear(r);
   mpz_clear(Y);
+
+  clock_t afterGuessFindingTime = clock();
 
   FILE *binInput = fopen("binInput", "wb");
 
@@ -193,14 +217,16 @@ int main(int argc, char *argv[]) {
   }
   fclose(binInput);
   system("./GaussBin binInput binOutput");
-  // system("rm binInput");
+  system("rm binInput");
 
   FILE *binOutput = fopen("binOutput", "rb");
   int binSolutions;
   fscanf(binOutput, "%d", &binSolutions);
+  clock_t afterGaussElimTime = clock();
 
   if (binSolutions > 0) {
-    mpz_t diff, X, rSquared;
+    mpz_t diff, X;
+    bool foundSol;
     int l;
     mpz_init(X);
     mpz_init(Y);
@@ -213,14 +239,6 @@ int main(int argc, char *argv[]) {
         if (k) {
           mpz_mul(X, X, *guesses[j]->r);
           mpz_mul(Y, Y, *guesses[j]->rSquared);
-          /*
-          for (l = 0; l < F.size; l++) {
-            int p = F.array[l] * guesses[j]->factors.array[l];
-            if (p != 0) {
-              mpz_mul_si(Y, Y, p);
-            }
-          }
-          */
         }
       }
       mpz_sqrt(Y, Y);
@@ -232,10 +250,26 @@ int main(int argc, char *argv[]) {
         mpz_mod(diff, diff, N);
         gcd(diff, diff, N);
         if (mpz_cmp_ui(diff, 1) != 0) {
-          printf("Try X = %ld and Y = %ld. GCD = %ld \n", mpz_get_si(X),
+          printf("\n \nFound a solution in %.6f seconds,\n",
+                 (float)(clock() - startTime) / CLOCKS_PER_SEC);
+          printf("X = %ld and Y = %ld. GCD = %ld \n", mpz_get_si(X),
                  mpz_get_si(Y), mpz_get_si(diff));
+          mpz_divexact(X, N, diff);
+          printf("This gives %s = %s * %s. \n \n \n", mpz_get_str(NULL, 10, N),
+                 mpz_get_str(NULL, 10, diff), mpz_get_str(NULL, 10, X));
+          foundSol = true;
+
+          printf("GuessFindingTime = %.6f seconds\n",
+                 (float)(afterGuessFindingTime - startTime) / CLOCKS_PER_SEC);
+          printf("GuessElimTime = %.6f seconds\n",
+                 (float)(afterGaussElimTime - afterGuessFindingTime) /
+                     CLOCKS_PER_SEC);
+          printf("Total execution = %.6f seconds\n",
+                 (float)(clock() - startTime) / CLOCKS_PER_SEC);
         }
       }
+      if (foundSol)
+        break;
     }
     mpz_clear(X);
     mpz_clear(Y);
@@ -243,21 +277,12 @@ int main(int argc, char *argv[]) {
   } else {
     printf("No solutions found, try different parameters.");
   }
-  // system("rm binOutput");
-
+  system("rm binOutput");
   for (i = 0; i < L_found; i++) {
     mpz_clear(*guesses[i]->r);
     mpz_clear(*guesses[i]->rSquared);
     free(guesses[i]->factors.array);
   }
-
-  /*
-  mpz_t A,B,res;
-  mpz_init_set_str(A, argv[3], 10);
-  mpz_init_set_str(B, argv[4], 10);
-  mpz_init(res);
-  gcd(res, A, B);
-  printf("GCD(%s,%s) = %ld", argv[3], argv[4], mpz_get_si(res));
-*/ //  Comment silco believes in u, dont make him dissapointed
+  free(*guesses);
   return 0;
 }
