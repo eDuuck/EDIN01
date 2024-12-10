@@ -1,0 +1,546 @@
+%% Created by Maple 2024.2, Linux
+%% Source Worksheet: MapleExercises
+%% Generated: Tue Dec 10 14:17:55 CET 2024
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{mathtools}
+\usepackage{maple}
+\usepackage[utf8]{inputenc}
+\usepackage[svgnames]{xcolor}
+\usepackage{amsmath}
+\usepackage{breqn}
+\usepackage{textcomp}
+\begin{document}
+\lstset{basicstyle=\ttfamily,breaklines=true,columns=flexible}
+\pagestyle{empty}
+\DefineParaStyle{Maple Bullet Item}
+\DefineParaStyle{Maple Heading 1}
+\DefineParaStyle{Maple Warning}
+\DefineParaStyle{Maple Heading 4}
+\DefineParaStyle{Maple Heading 2}
+\DefineParaStyle{Maple Heading 3}
+\DefineParaStyle{Maple Dash Item}
+\DefineParaStyle{Maple Error}
+\DefineParaStyle{Maple Title}
+\DefineParaStyle{Maple Ordered List 1}
+\DefineParaStyle{Maple Text Output}
+\DefineParaStyle{Maple Ordered List 2}
+\DefineParaStyle{Maple Ordered List 3}
+\DefineParaStyle{Maple Normal}
+\DefineParaStyle{Maple Ordered List 4}
+\DefineParaStyle{Maple Ordered List 5}
+\DefineCharStyle{Maple 2D Output}
+\DefineCharStyle{Maple 2D Input}
+\DefineCharStyle{Maple Maple Input}
+\DefineCharStyle{Maple 2D Math}
+\DefineCharStyle{Maple Hyperlink}
+\begin{Maple Normal}
+Sanity cheking home exercise 1 results:
+\end{Maple Normal}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+{$ \displaystyle x^{4}+x^{2}+1=\mathit{Factor} (x^{4}+x^{2}+1)\boldsymbol{\mod}2;
+\\
+ x^{3}+x^{1}+1=\mathit{Factor} (x^{3}+x^{1}+1)\boldsymbol{\mod}3; $}
+\end{Maple Normal}
+% \mapleresult
+\begin{dmath*}
+x^{4}+x^{2}+1=(x^{2}+x +1)^{2}
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath}\label{(1)}
+x^{3}+x +1=\left(x^{2}+x +2\right) \left(x +2\right)
+\end{dmath}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+Factoring polynomials in Lab Exercise 1, if no factors are found then polynomial is reducible:
+\end{Maple Normal}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+{$ \displaystyle \mathit{p1} \coloneqq x^{23}+x^{5}+1\colon \mathit{
+\\
+\,}\mathit{p2} \coloneqq x^{23}+x^{6}+1\colon \mathit{
+\\
+\,}x^{23}+x^{5}+1=\mathit{Factor} \mathit{(\mathit{p1})}\boldsymbol{\mod}2;\mathit{
+\\
+\,}x^{23}+x^{6}+1=\mathit{Factor} \mathit{(\mathit{p2})}\boldsymbol{\mod}2;\mathit{
+\\
+\,}\mathit{f2} \coloneqq \mathit{(\mathit{Factors}\,\mathit{(\mathit{p2})}\boldsymbol{\mod}2)\,}\mathit{[2]}\colon \mathit{
+\\
+\,}x^{18}+x^{3}+1=\mathit{Factor} \mathit{(x^{18}+x^{3}+1)}\boldsymbol{\mod}2;\mathit{
+\\
+\,}x^{8}+x^{6}+1=\mathit{Factor} \mathit{(x^{8}+x^{6}+1)}\boldsymbol{\mod}7; $}
+\end{Maple Normal}
+% \mapleresult
+\begin{dmath*}
+x^{23}+x^{5}+1=x^{23}+x^{5}+1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+x^{23}+x^{6}+1=(x^{16}+x^{15}+x^{13}+x^{12}+x^{8}+x^{6}+x^{4}+x^{3}+x^{2}+x +1) (x^{3}+x +1) (x^{4}+x^{3}+1)
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+x^{18}+x^{3}+1=x^{18}+x^{3}+1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath}\label{(2)}
+x^{8}+x^{6}+1=\left(x^{4}+3 x^{3}+5 x^{2}+5 x +6\right) \left(x^{4}+4 x^{3}+5 x^{2}+2 x +6\right)
+\end{dmath}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+Setting up the element \alpha and calculating order of \alpha, \alpha^2, \alpha^3, \alpha + \alpha^3:
+\end{Maple Normal}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+{$ \displaystyle \mathit{G218} \coloneqq \mathit{GF} (2,18,\alpha^{18}+\alpha^{3}+1)\colon 
+\\
+ a \coloneqq \mathit{G218} (\alpha)\colon 
+\\
+ \mathit{ord} (\alpha)=\mathit{G218} \mcoloneq \mathit{order} (a);
+\\
+ \mathit{ord} (\alpha^{2})=\mathit{G218} \mcoloneq \mathit{order} (\mathit{G218} \colon -\mathit{{\mhat}}(a ,2));
+\\
+ \mathit{ord} (\alpha^{3})=\mathit{G218} \mcoloneq \mathit{order} (\mathit{G218} \colon -\mathit{{\mhat}}(a ,3));
+\\
+ \mathit{ord} (\alpha +\alpha^{3})=\mathit{G218} \mcoloneq \mathit{order} (\mathit{G218} \mcoloneq \mathit{+}(a ,\mathit{G218} \colon -\mathit{{\mhat}}(a ,3))); $}
+\end{Maple Normal}
+% \mapleresult
+\begin{dmath*}
+\mathit{ord} \! \left(\alpha \right)=189
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+\mathit{ord} \! \left(\alpha^{2}\right)=189
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+\mathit{ord} \! \left(\alpha^{3}\right)=63
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath}\label{(3)}
+\mathit{ord} \! \left(\alpha^{3}+\alpha \right)=262143
+\end{dmath}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+Lab exercise 3:
+\end{Maple Normal}
+\begin{Maple Normal}
+{$ \displaystyle \mathit{Primitive} \mathit{(\mathit{p1})}\boldsymbol{\mod}2 $}
+\end{Maple Normal}
+% \mapleresult
+\begin{dmath}\label{(4)}
+\mathit{true} 
+\end{dmath}
+\begin{Maple Normal}
+Since p1 is primitive, it follows that\
+
+the cycle set for p1 = 1(1) + 1(2^23-1).
+\end{Maple Normal}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+For the second polynomial we have:
+\end{Maple Normal}
+\begin{Maple Normal}
+{$ \displaystyle \mathit{Primitive} (\mathit{f2} [1][1])\boldsymbol{\mod}2;
+\\
+ \mathit{Primitive} (\mathit{f2} [2][1])\boldsymbol{\mod}2;
+\\
+ \mathit{Primitive} (\mathit{f2} [3][1])\boldsymbol{\mod}2; $}
+\end{Maple Normal}
+% \mapleresult
+\begin{dmath*}
+\mathit{false} 
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+\mathit{true} 
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath}\label{(5)}
+\mathit{true} 
+\end{dmath}
+\begin{Maple Normal}
+{$ \displaystyle \mathit{T1} =2^{\mathit{degree} }(\mathit{f2} [2][1])-1;
+\\
+ \mathit{T3} =2^{\mathit{degree} }(\mathit{f2} [3][1])-1; $}
+\end{Maple Normal}
+% \mapleresult
+\begin{dmath*}
+\mathit{T1} =7
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath}\label{(6)}
+\mathit{T3} =15
+\end{dmath}
+\begin{Maple Normal}
+{$ \displaystyle f \coloneqq \mathit{f2} [1][1]\colon 
+\\
+ \mathit{divs} \coloneqq \mathit{NumberTheory} \mcoloneq \mathit{Divisors} (2^{\mathit{degree} (f)}-1)\colon 
+\\
+ i \coloneqq 1\colon 
+\\
+ n \coloneqq \mathit{factor} (\mathit{degree} (f)-1)\colon 
+\\
+ 
+\\
+ \boldsymbol{\mathrm{while}}\boldsymbol{\neg}(\mathit{Divide} (x^{\mathit{divs} [i]}+1,f)\boldsymbol{\mod}2)\boldsymbol{\land}i <2^{\mathit{degree} \mathit{(f)}}\boldsymbol{\mathrm{do}}
+\\
+ i ++\colon 
+\\
+ \boldsymbol{\mathrm{end}}\boldsymbol{\mathrm{do}}\colon 
+\\
+ \mathit{T2} =\mathit{divs} [i] $}
+\end{Maple Normal}
+% \mapleresult
+\begin{dmath}\label{(7)}
+\mathit{T2} =21845
+\end{dmath}
+\begin{Maple Normal}
+All in all we have: C1 = [1(1) + 1(15)], C2 = [1(1) + 3 (21845)], C3 = [1(1) + 1(7)]
+\end{Maple Normal}
+\begin{Maple Normal}
+{$ \displaystyle \mathit{C12} \coloneqq [1,1],[1,15],[3,\mathit{divs} [i]],[3\cdot \gcd (15,\mathit{divs} [i]),\mathit{lcm} (15,\mathit{divs} [i])] $}
+\end{Maple Normal}
+% \mapleresult
+\begin{dmath}\label{(8)}
+\mathit{C12} \coloneqq \left[1,1\right],\left[1,15\right],\left[3,21845\right],\left[15,65535\right]
+\end{dmath}
+\begin{Maple Normal}
+{$ \displaystyle \mathit{C123} \coloneqq \mathit{C12} ,[1\cdot \gcd (7,15),\mathit{lcm} (7,15)],[3\cdot \gcd (7,\mathit{divs} [i]),\mathit{lcm} (7,\mathit{divs} [i])],[15\cdot \gcd (7,65535),\mathit{lcm} (7,65535)] $}
+\end{Maple Normal}
+% \mapleresult
+\begin{dmath}\label{(9)}
+\mathit{C123} \coloneqq \left[1,1\right],\left[1,15\right],\left[3,21845\right],\left[15,65535\right],\left[1,105\right],
+\\
+\left[3,152915\right],\left[15,458745\right]
+\end{dmath}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\begin{Maple Normal}
+{$ \displaystyle z \coloneqq 4\colon 
+\\
+ \boldsymbol{\mathrm{for}}i \boldsymbol{\mathrm{from}}1\boldsymbol{\mathrm{to}}z \boldsymbol{\mathrm{do}}
+\\
+ \boldsymbol{\mathrm{for}}j \boldsymbol{\mathrm{from}}0\boldsymbol{\mathrm{to}}z \boldsymbol{\mathrm{do}}
+\\
+ \boldsymbol{\mathrm{for}}k \boldsymbol{\mathrm{from}}0\boldsymbol{\mathrm{to}}z \boldsymbol{\mathrm{do}}
+\\
+ \boldsymbol{\mathrm{for}}l \boldsymbol{\mathrm{from}}0\boldsymbol{\mathrm{to}}z \boldsymbol{\mathrm{do}}
+\\
+ 
+\\
+ \boldsymbol{\mathrm{if}}(\mathit{Primitive} (i \cdot x^{4}+j \cdot x^{3}+k \cdot x^{2}+l \cdot x +1)\boldsymbol{\mod}5)\boldsymbol{\mathrm{then}}
+\\
+ \mathit{print} (i \cdot x^{4}+j \cdot x^{3}+k \cdot x^{2}+l \cdot x +1);
+\\
+ \esnum \mathit{break\,i;\,} 
+\\
+ \boldsymbol{\mathrm{end}}\boldsymbol{\mathrm{if}};
+\\
+ \boldsymbol{\mathrm{end}}\boldsymbol{\mathrm{do}};
+\\
+ \boldsymbol{\mathrm{end}}\boldsymbol{\mathrm{do}};
+\\
+ 
+\\
+ \boldsymbol{\mathrm{end}}\boldsymbol{\mathrm{do}};
+\\
+ \boldsymbol{\mathrm{end}}\boldsymbol{\mathrm{do}}; $}
+\end{Maple Normal}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+2 x^{2}+x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+2 x^{2}+4 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+3 x^{2}+2 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+3 x^{2}+3 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+x^{3}+3 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+x^{3}+4 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+x^{3}+2 x^{2}+x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+x^{3}+3 x^{2}+4 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+x^{3}+4 x^{2}+1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+2 x^{3}+2 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+2 x^{3}+4 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+2 x^{3}+x^{2}+1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+2 x^{3}+2 x^{2}+2 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+2 x^{3}+3 x^{2}+3 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+3 x^{3}+x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+3 x^{3}+3 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+3 x^{3}+x^{2}+1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+3 x^{3}+2 x^{2}+3 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+3 x^{3}+3 x^{2}+2 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+4 x^{3}+x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+4 x^{3}+2 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+4 x^{3}+2 x^{2}+4 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+4 x^{3}+3 x^{2}+x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+2 x^{4}+4 x^{3}+4 x^{2}+1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+2 x^{2}+2 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+2 x^{2}+3 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+3 x^{2}+x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+3 x^{2}+4 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+x^{3}+x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+x^{3}+2 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+x^{3}+x^{2}+x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+x^{3}+4 x^{2}+1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+x^{3}+4 x^{2}+4 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+2 x^{3}+x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+2 x^{3}+3 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+2 x^{3}+x^{2}+1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+2 x^{3}+x^{2}+2 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+2 x^{3}+4 x^{2}+3 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+3 x^{3}+2 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+3 x^{3}+4 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+3 x^{3}+x^{2}+1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+3 x^{3}+x^{2}+3 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+3 x^{3}+4 x^{2}+2 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+4 x^{3}+3 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+4 x^{3}+4 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+4 x^{3}+x^{2}+4 x +1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath*}
+3 x^{4}+4 x^{3}+4 x^{2}+1
+\end{dmath*}
+\vspace{-\bigskipamount}
+% \mapleresult
+\begin{dmath}\label{(10)}
+3 x^{4}+4 x^{3}+4 x^{2}+x +1
+\end{dmath}
+\begin{Maple Normal}
+{$ \displaystyle \mathit{Primitive} (2\cdot x^{4}+2\cdot x^{2}+x +1)\boldsymbol{\mod}5 $}
+\end{Maple Normal}
+% \mapleresult
+\begin{dmath}\label{(11)}
+\mathit{true} 
+\end{dmath}
+\begin{Maple Normal}
+
+\end{Maple Normal}
+\end{document}
