@@ -13,16 +13,28 @@ void printVec(uint *vec, uint len) {
   printf("\n");
 }
 
+void gStrim(uint *C, uint Clen, uint *S, uint Slen, uint *state) {
+  uint sum, i, l;
+  for (i = 0; i < Clen; i++)
+    S[i] = state[i];
+  for (i = Clen; i < Slen; i++) {
+    sum = 0;
+    for (l = 0; l < Clen; l++) {
+      sum += C[l] * S[i - l + 1];
+    }
+    S[i] = sum % 2;
+  }
+}
 void generateStream(uint *C, uint Clen, uint *S, uint Slen, uint *state) {
-  uint i, j;
-  uint sum = 0;
-  for (i = 0; i < Slen; i++) {
-    S[i] = state[Clen - 1];      // Set output to state of final D-element.
-    for (j = 0; j < Clen; j++) { // Perform the state of LFSR.
-      sum += state[j] * C[j];
+  uint sum;
+  for (int i = 0; i < Slen; i++) {
+    S[i] = state[Clen - 1]; // Set output to state of final D-element.
+    sum = 0;
+    for (int j = 0; j < Clen; j++) { // Perform the state of LFSR.
+      sum += state[j] & C[j];
     }
     sum = sum % 2;
-    for (j = Clen - 1; j > 0; j--) {
+    for (int j = Clen - 1; j > 0; j--) {
       state[j] = state[j - 1];
     }
     state[0] = sum;
@@ -35,7 +47,7 @@ int main(int argc, char *argv[]) {
            "z-String");
     return 0;
   }
-  uint i, j, k, diff, sLen;
+  uint i, j, k, diff;
   uint zLen = 0;
   char ch;
   FILE *LFSRS = fopen(argv[1], "rb");
@@ -53,8 +65,13 @@ int main(int argc, char *argv[]) {
 
   uint *zOut = (uint *)malloc(maxZLen * sizeof(int));
   FILE *zFile = fopen(argv[2], "rb");
-  while ((ch = fgetc(zFile)) != EOF && zLen < maxZLen)
-    zOut[zLen++] = (ch == '1') ? 1 : 0;
+  while ((ch = fgetc(zFile)) != EOF && zLen < maxZLen) {
+    if (ch == '1')
+      zOut[zLen++] = 1;
+    if (ch == '0')
+      zOut[zLen++] = 0;
+  }
+
   fclose(zFile);
   if (zLen == maxZLen) {
     printf("z-String too long, aborting.");
@@ -67,19 +84,22 @@ int main(int argc, char *argv[]) {
   // printVec(Cvals[1], LFSRSizes[1]);
   // printVec(Cvals[2], LFSRSizes[2]);
 
-  sLen = zLen;
-  uint *S = malloc(sLen * sizeof(int));
+  // I know the code above works, it prints out the correct values for CVals and
+  // zOut.
+  uint *S = calloc(zLen, sizeof(uint));
   uint *bestCorr = calloc(nbrOfLFSR, sizeof(uint));
-
   float p, bestP;
   for (i = 0; i < nbrOfLFSR; i++) {
-    uint *state = calloc(LFSRSizes[i], sizeof(int));
+    uint *state = calloc(LFSRSizes[i], sizeof(uint));
 
+    uint maxDiff = UINT_MAX;
     bestP = 0.5;
     for (j = 0; j < (1 << LFSRSizes[i]); j++) {
       for (k = 0; k < LFSRSizes[i]; k++)
         state[k] = (j >> k) & 0b1; // Set the state;
-      generateStream(Cvals[i], LFSRSizes[i], S, sLen, state);
+      // printVec(state, LFSRSizes[i]);
+
+      generateStream(Cvals[i], LFSRSizes[i], S, zLen, state);
       diff = 0;
       for (k = 0; k < zLen; k++) {
         diff += zOut[k] ^ S[k];
@@ -87,8 +107,9 @@ int main(int argc, char *argv[]) {
       float p = 1 - (float)diff / zLen;
       // printf("%d ", diff);
       if (fabs(0.5 - p) > fabs(0.5 - bestP)) {
-        printf("Found new best state, p = %.3f, state = %d \n", p, j);
+        // printf("Found new best state, p = %.3f, state = %d \n", p, j);
         bestP = p;
+        maxDiff = diff;
         bestCorr[i] = j;
       }
     }
@@ -101,7 +122,8 @@ int main(int argc, char *argv[]) {
     uint *state = calloc(LFSRSizes[i], sizeof(int));
     for (j = 0; j < LFSRSizes[i]; j++)
       state[j] = (bestCorr[i] >> j) & 0b1; // Set the state;
-    generateStream(Cvals[i], LFSRSizes[i], S, sLen, state);
+    generateStream(Cvals[i], LFSRSizes[i], S, zLen, state);
+    // printVec(S, zLen);
     for (j = 0; j < zLen; j++)
       output[j] += S[j];
   }
