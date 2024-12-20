@@ -70,12 +70,13 @@ int main(int argc, char *argv[]) {
   printVec(zOut, zLen);
   uint *S = calloc(zLen, sizeof(uint));
   uint *bestCorr = calloc(nbrOfLFSR, sizeof(uint));
-  float p, bestP;
+  float p;
+  float *bestP = malloc(nbrOfLFSR * sizeof(float));
   for (i = 0; i < nbrOfLFSR; i++) {
     printf("Searching best state for LFSR %d.\n", i + 1);
     uint *state = calloc(LFSRSizes[i], sizeof(uint));
 
-    bestP = 0.5;
+    bestP[i] = 0.5;
     for (j = 0; j < (1 << LFSRSizes[i]); j++) {
       for (k = 0; k < LFSRSizes[i]; k++)
         state[k] = (j >> k) & 0b1; // Set the state;
@@ -86,9 +87,9 @@ int main(int argc, char *argv[]) {
         diff += zOut[k] ^ S[k];
       }
       float p = 1 - (float)diff / zLen;
-      if (fabs(0.5 - p) > fabs(0.5 - bestP)) {
+      if (fabs(0.5 - p) > fabs(0.5 - bestP[i])) {
         // printf("Found new best state, p = %.3f, state = %d \n", p, j);
-        bestP = p;
+        bestP[i] = p;
         bestCorr[i] = j;
       }
     }
@@ -101,7 +102,7 @@ int main(int argc, char *argv[]) {
     uint *state = calloc(LFSRSizes[i], sizeof(int));
     for (j = 0; j < LFSRSizes[i]; j++)
       state[j] = (bestCorr[i] >> j) & 0b1; // Set the state;
-    printf("k%d: ", i + 1);
+    printf("p = %.3f, k%d: ", bestP[i], i + 1);
     printVec(state, LFSRSizes[i]);
     generateStream(Cvals[i], LFSRSizes[i], S, zLen, state);
     for (j = 0; j < zLen; j++)
@@ -128,6 +129,7 @@ closing:
   for (i = 0; i < nbrOfLFSR; i++) {
     free(Cvals[i]);
   }
+  free(bestP);
   free(output);
   free(S);
   free(zOut);
