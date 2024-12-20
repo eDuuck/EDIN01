@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <time.h>
 
 #define maxZLen 1000
 
@@ -13,35 +14,21 @@ void printVec(uint *vec, uint len) {
   printf("\n");
 }
 
-void gStrim(uint *C, uint Clen, uint *S, uint Slen, uint *state) {
-  uint sum, i, l;
-  for (i = 0; i < Clen; i++)
+void generateStream(uint *C, uint Clen, uint *S, uint Slen, uint *state) {
+  int sum, i, l;
+  for (i = Clen - 1; i >= 0; i--)
     S[i] = state[i];
-  for (i = Clen; i < Slen; i++) {
+  for (i = Clen - 1; i < Slen - 1; i++) {
     sum = 0;
     for (l = 0; l < Clen; l++) {
-      sum += C[l] * S[i - l + 1];
+      sum += C[l] & S[i - l];
     }
-    S[i] = sum % 2;
-  }
-}
-void generateStream(uint *C, uint Clen, uint *S, uint Slen, uint *state) {
-  uint sum;
-  for (int i = 0; i < Slen; i++) {
-    S[i] = state[Clen - 1]; // Set output to state of final D-element.
-    sum = 0;
-    for (int j = 0; j < Clen; j++) { // Perform the state of LFSR.
-      sum += state[j] & C[j];
-    }
-    sum = sum % 2;
-    for (int j = Clen - 1; j > 0; j--) {
-      state[j] = state[j - 1];
-    }
-    state[0] = sum;
+    S[i + 1] = sum & 1;
   }
 }
 
 int main(int argc, char *argv[]) {
+  clock_t startTime = clock();
   if (argc < 2) {
     printf("Please feed call the program with the inputs: ./corrAttack LFSRs "
            "z-String");
@@ -79,25 +66,19 @@ int main(int argc, char *argv[]) {
   }
   zOut = realloc(zOut, zLen * sizeof(int));
 
+  printf("Input string: \n");
   printVec(zOut, zLen);
-  // printVec(Cvals[0], LFSRSizes[0]);
-  // printVec(Cvals[1], LFSRSizes[1]);
-  // printVec(Cvals[2], LFSRSizes[2]);
-
-  // I know the code above works, it prints out the correct values for CVals and
-  // zOut.
   uint *S = calloc(zLen, sizeof(uint));
   uint *bestCorr = calloc(nbrOfLFSR, sizeof(uint));
   float p, bestP;
   for (i = 0; i < nbrOfLFSR; i++) {
+    printf("Searching best state for LFSR %d.\n", i + 1);
     uint *state = calloc(LFSRSizes[i], sizeof(uint));
 
-    uint maxDiff = UINT_MAX;
     bestP = 0.5;
     for (j = 0; j < (1 << LFSRSizes[i]); j++) {
       for (k = 0; k < LFSRSizes[i]; k++)
         state[k] = (j >> k) & 0b1; // Set the state;
-      // printVec(state, LFSRSizes[i]);
 
       generateStream(Cvals[i], LFSRSizes[i], S, zLen, state);
       diff = 0;
@@ -105,32 +86,44 @@ int main(int argc, char *argv[]) {
         diff += zOut[k] ^ S[k];
       }
       float p = 1 - (float)diff / zLen;
-      // printf("%d ", diff);
       if (fabs(0.5 - p) > fabs(0.5 - bestP)) {
         // printf("Found new best state, p = %.3f, state = %d \n", p, j);
         bestP = p;
-        maxDiff = diff;
         bestCorr[i] = j;
       }
     }
-    // printf("\n");
     free(state);
   }
 
   uint *output = calloc(zLen, sizeof(uint));
+  printf("\nFound the keys:\n\n");
   for (i = 0; i < nbrOfLFSR; i++) {
     uint *state = calloc(LFSRSizes[i], sizeof(int));
     for (j = 0; j < LFSRSizes[i]; j++)
       state[j] = (bestCorr[i] >> j) & 0b1; // Set the state;
+    printf("k%d: ", i + 1);
+    printVec(state, LFSRSizes[i]);
     generateStream(Cvals[i], LFSRSizes[i], S, zLen, state);
-    // printVec(S, zLen);
     for (j = 0; j < zLen; j++)
       output[j] += S[j];
   }
-  for (j = 0; j < zLen; j++)
-    output[j] = (output[j] < 2) ? 0 : 1;
-  printVec(output, zLen);
 
+  // Convert to majority function and check if correct output.
+  diff = 0;
+  for (j = 0; j < zLen; j++) {
+    output[j] = (output[j] < 2) ? 0 : 1; // Majority function.
+    diff += output[j] ^ zOut[j];
+  }
+
+  printf("\nThis yields the output: \n");
+  printVec(output, zLen);
+  if (diff > 0)
+    printf("Didn't find the correct key. Sad noises...");
+  else
+    printf("This matches the input exactly.");
+
+  printf("\nFinished in %.6f seconds. \n",
+         (float)(clock() - startTime) / CLOCKS_PER_SEC);
 closing:
   for (i = 0; i < nbrOfLFSR; i++) {
     free(Cvals[i]);
